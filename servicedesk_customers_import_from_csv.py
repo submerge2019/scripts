@@ -25,7 +25,7 @@ CSV Format: (CSV is assumed to have a header row)
 """
 
 import requests, json, logging, argparse, csv
-from urlparse import urlsplit
+from urllib.parse import urlsplit
 
 parser = argparse.ArgumentParser()
 parser.add_argument( "base_url", help="The url of the hosted instance of JIRA")
@@ -56,7 +56,7 @@ def init():
 
 def parse_csv(filename):
     output = []
-    with open(filename, 'rb') as f:
+    with open(filename, 'r') as f:
         reader = csv.reader(f, delimiter=',', quotechar='"')
         for row in reader:
             output.append(row)
