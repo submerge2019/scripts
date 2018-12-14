@@ -2,22 +2,18 @@
 usage: bulk_customer_import.py [-h] [-l LOGLEVEL]
                                base_url auth_user auth_pass filename
                                servicedesk_id
-
 positional arguments:
   base_url              The url of the hosted instance of JIRA https://yourdomain.atlassian.net
   auth_user             Username for basic http authentication (Account needs to be jira admin)
   auth_pass             Password for basic http authentication
   filename              The filepath to the CSV. CSV is assumed to have a header row. Columns ordered Organisation, Full Name, Email Address
   servicedesk_id        The id of the service desk e.g https://<base_url>/servicedesk/customer/portal/2  <-- the '2' is the ID
-
 optional arguments:
   -h, --help            show this help message and exit
   -l LOGLEVEL, --loglevel LOGLEVEL
                         Set log level (DEBUG,INFO,WARNING,ERROR,CRITICAL)
-
 example:
   python bulk_customer_import.py "https://mycustomer.atlassian.net" "local-admin" "P4ssw0rd" customers.csv 2 -l debug
-
 CSV Format: (CSV is assumed to have a header row)
   Organisation Name, Customer Full Name, Customer Email
   Apple, Steve Jobs, steve.jobs@apple.com
@@ -103,7 +99,7 @@ def add_customer_to_organization(organization, customer):
         "X-ExperimentalApi" : "true",
         "Content-Type": "application/json"
     }
-    fields = { "usernames":  [customer["emailAddress"]] }
+    fields = { "usernames":  [customer["name"]] }
     logger.debug(organization)
     url = api_url + "/organization/{}/user".format(organization["id"])
     response = jira_session.post(url, headers=headers, data=json.dumps(fields))
@@ -138,7 +134,7 @@ def add_customer_to_servicedesk(servicedesk_id, customer):
     logger.debug("{} ({}) - [{}] {}".format(response.status_code, response.reason, "POST", url))
 
     if response.ok:
-        logger.info("{} was added to service desk {}".format(customer["fullName"]))
+        logger.info("{} was added to service desk {}".format(customer["name"]))
 
     logger.error(response.text)
     return False
@@ -201,12 +197,12 @@ def main():
             else:
                 organization = create_organization(organization_name)
                 add_organization_to_servicedesk(args.servicedesk_id, organization)
-
-            # Move the customer into the organization
-            add_customer_to_organization(organization, customer)
-
+            
             # Add the customer into the service desk
-            add_customer_to_servicedesk(args.servicedesk_id, customer)
+           # add_customer_to_servicedesk(args.servicedesk_id, customer)
+			
+			# Move the customer into the organization
+            add_customer_to_organization(organization, customer)
         except:
             logger.exception("Failed to process row: {}".format(row))
             rows_not_processed.append(row)
@@ -218,4 +214,4 @@ def main():
 
 if __name__ == "__main__":
     init()
-    main()
+main()
